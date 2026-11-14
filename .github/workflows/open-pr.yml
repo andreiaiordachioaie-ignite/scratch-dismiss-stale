@@ -1,0 +1,31 @@
+name: open-pr
+on:
+  workflow_dispatch:
+    inputs:
+      head:
+        required: true
+      base:
+        required: true
+        default: main
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base }}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD: ${{ inputs.head }}
+          BASE: ${{ inputs.base }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$HEAD"
+          echo "test line for $HEAD" >> README.md
+          git commit -am "test: $HEAD"
+          git push origin "$HEAD"
+          gh pr create --base "$BASE" --head "$HEAD" --title "test: $HEAD" --body "Scratch control for DEVOPSSAAS-2343: a one-line README change."
